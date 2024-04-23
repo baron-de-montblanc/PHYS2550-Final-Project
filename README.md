@@ -1,9 +1,19 @@
-# PHYS2550-Final-Project
-Final Project for PHYS 2550
+# Galaxy Cluster Redshift Classification Using Machine Learning
 
-## TODO:
+Spring 2024 - PHYS 2550 - Final Project
 
-- Preprocess the data
-- Build visualization tools? (plots and graphs)
-- Build Neural Network Model
-- Train and test the model
+*Authors: Jade Ducharme, Zacharias Escalante, Fei Fan, Soren Helhoski, Shi Yan*
+
+## Structure
+
+#### Preprocessing
+
+First, the data is loaded, basic preprocessing steps are applied (taking care of NaN values, normalization, etc. --> TODO), and the data is split into training, validation, and test sets. We visualize our input data using histograms and 2D feature vs. label (redshift) plots.
+
+#### Simple FCNN
+
+As a first step, we want to know how a simple fully-connected neural network performs on this dataset. We define a simple FCNN model in ```model.py```, train it, and visualize the results using a predicted label (redshift) vs. true label (redshift) plot.
+
+#### 1D CNN
+
+TODO.
