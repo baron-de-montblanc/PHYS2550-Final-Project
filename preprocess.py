@@ -20,11 +20,10 @@ def load(csv, mode):
     labels = df["spec_z"].values  # grab the labels...
     df = df.drop("spec_z", axis=1)  # ... and remove the labels column
 
-    cols = df.columns
-
     # Hard-coded column name mapping:
     if mode == "mag":
-        req_cols = ['u_cmodel_mag', 
+        req_cols = ['res',
+                    'u_cmodel_mag', 
                     'g_cmodel_mag', 
                     'r_cmodel_mag', 
                     'i_cmodel_mag', 
@@ -44,8 +43,8 @@ def load(csv, mode):
     else: 
         if mode != "all": raise ValueError("mode must be one of 'all', 'mag', 'err'")
 
-    # TODO: What do we do with all these nan's?
-    df = df.fillna(0)  # temporary fix: replace with zeros
+    # **if** there are still NaN's, replace with zero
+    df = df.fillna(0)
 
     data = df.values
     return data, labels, np.array(df.columns)

@@ -8,23 +8,27 @@ import torch.nn as nn
 
 class SimpleFCNN(nn.Module):
 
-    def __init__(self, num_features, dropout_rate=0.4):
+    def __init__(self, num_features, dropout_rate=0.5):
         super(SimpleFCNN, self).__init__()
-        self.fc1 = nn.Linear(num_features, 256)
-        self.drop1 = nn.Dropout(dropout_rate)
-        self.fc2 = nn.Linear(256, 128)
-        self.drop2 = nn.Dropout(dropout_rate)
-        self.fc3 = nn.Linear(128, 1)
+        self.fc1 = nn.Linear(num_features, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, 1)
+        # self.fc4 = nn.Linear(64, 1)
         self.activ = nn.LeakyReLU()
+        self.drop = nn.Dropout(dropout_rate)
 
     def forward(self, x):
         x = self.fc1(x)
         x = self.activ(x)
-        x = self.drop1(x)
+        x = self.drop(x)
 
         x = self.fc2(x)
         x = self.activ(x)
-        x = self.drop2(x)
+        x = self.drop(x)
+
+        # x = self.fc3(x)
+        # x = self.activ(x)
+        # x = self.drop(x)
 
         x = self.fc3(x)
         return x
