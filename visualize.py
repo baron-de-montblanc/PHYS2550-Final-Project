@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy.stats import linregress
 
 
 # ------------------ Write some input/result visualization functions -----------------------
@@ -75,6 +76,8 @@ def plot_loss(loss_list, val_loss_list):
 
 
 def plot_accuracy(acc_list, val_acc_list):
+    acc_list = [i.item() for i in acc_list]
+    val_acc_list = [i.item() for i in val_acc_list]
     plt.figure(figsize=(6,4))
     plt.plot(acc_list, label="Training accuracy")
     plt.plot(val_acc_list, label="Validation accuracy")
@@ -87,29 +90,45 @@ def plot_accuracy(acc_list, val_acc_list):
 
 
 
-def visualize_predictions(test_set, model, xrange=None):
+def visualize_predictions(test_set, model, device, xrange=None, yrange=None):
     """
     Given our test Subset, extract the test elements, pass them to the model and
     compare against true labels
 
     xrange: horizontal range of the plot. Can be either None (see full extent)
     or a tuple of ints
+    yrange: vertical range of the plot. Can be either None (see full extent)
+    or a tuple of ints
     """
     label_list = []
     pred_list = []
     for data, label in test_set:
+        data = data.to(device)
         label_list.append(label.item())
         pred = model(data)
         pred_list.append(pred.item())
 
     plt.figure(figsize=(6,4))
     plt.title("Model Prediction vs. True Redshift", y=1.02)
-    plt.plot(label_list, pred_list, linestyle="", marker=".", markersize=4)
+    plt.plot(label_list, pred_list, linestyle="", marker=".", markersize=4, label="Model Predictions")
     plt.xlabel("True Redshift")
     plt.ylabel("Predicted Redshift")
 
     if xrange:
         plt.xlim(xrange[0], xrange[1])
+    if yrange:
+        plt.ylim(yrange[0], yrange[1])
 
+    # Compare to a perfect prediction slope
+    xvals = np.linspace(min(label_list), max(label_list),1000)
+    plt.plot(xvals, xvals, linestyle='--', color=sns.color_palette()[1], alpha=0.9, label="Perfect Predictions Line")
+
+    # Add the model's best-fit line prediction
+    slope, intercept, r, p, se = linregress(label_list, pred_list)
+
+    best_fit_model = slope*xvals + intercept
+    plt.plot(xvals, best_fit_model, linestyle='--', color=sns.color_palette()[2], alpha=0.9, label="Model Best-Fit Line")
+
+    plt.legend()
     plt.show()
 
