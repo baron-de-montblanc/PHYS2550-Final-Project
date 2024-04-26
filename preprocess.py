@@ -44,7 +44,7 @@ def load(csv, mode):
         if mode != "all": raise ValueError("mode must be one of 'all', 'mag', 'err'")
 
     # **if** there are still NaN's, replace with zero
-    df = df.fillna(0)
+    # df = df.fillna(0)
 
     data = df.values
     return data, labels, np.array(df.columns)
