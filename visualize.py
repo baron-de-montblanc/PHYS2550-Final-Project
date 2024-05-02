@@ -125,7 +125,7 @@ def visualize_predictions(test_set, model, device, xrange=None, yrange=None):
 
     # Add the model's best-fit line prediction
     slope, intercept, r, p, se = linregress(label_list, pred_list)
-
+    print(slope)
     best_fit_model = slope*xvals + intercept
     plt.plot(xvals, best_fit_model, linestyle='--', color=sns.color_palette()[2], alpha=0.9, label="Model Best-Fit Line")
 
