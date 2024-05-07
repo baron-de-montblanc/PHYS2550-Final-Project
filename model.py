@@ -65,7 +65,7 @@ class ModifiedSimple1DCNN(nn.Module):
         x = self.fc2(x)
         return x  # No need to squeeze the output
 
-
+'''
 class Simple1DCNN(nn.Module):
     def __init__(self, num_features, num_classes):
         super(Simple1DCNN, self).__init__()  # initialize
@@ -87,7 +87,23 @@ class Simple1DCNN(nn.Module):
         x = self.fc1(x)
         return x
         #return x.squeeze(1)  # Squeeze the output to match the target size
+'''
 
+
+class Simple1DCNN(nn.Module):
+    def __init__(self, num_features, num_classes):
+        super(Simple1DCNN, self).__init__()  
+        self.conv1 = nn.Conv1d(in_channels=1, out_channels=16, kernel_size=3, stride=1, padding=1)
+        self.pool = nn.MaxPool1d(kernel_size=2, stride=2, padding=0)
+        self.fc1 = nn.Linear(16 * (num_features // 2), num_classes)
+
+    def forward(self, x):   
+        x = x.unsqueeze(1)  
+        x = self.conv1(x)
+        x = self.pool(x)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        return x
 
 
 
@@ -139,63 +155,56 @@ def test(model, device, test_loader, criterion, acc_metric):
     return avg_loss, avg_acc
 
 
-# training loop for 1D_CNN
-def train1D(model, criterion, optimizer, train_loader, device):
-    # Set the model to training mode
+# train and test loops for 1D_CNN
+def train1D(model, device, train_loader, optimizer, criterion, acc_metric):
     model.train()
-    train_loss = 0.0
-    correct = 0
-    total = 0
 
-    # Iterate over the training dataset
-    for inputs, labels in train_loader:
-        inputs, labels = inputs.to(device), labels.to(device)
+    total_loss = 0
+    total_accuracy = 0
 
+    for data, target in train_loader:
+        data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
-        outputs = model(inputs)
-        loss = criterion(outputs, labels)
-        loss.backward()   # .backward() compute gradients of the loss function
-        # Update the parameters
-        optimizer.step()  # .step() performs a single optimization step and updates the parameters according to the update rule defined by the optimizer.
+        output = model(data)
 
-        # Compute training loss and accuracy
-        train_loss += loss.item() * inputs.size(0)
-        _, predicted = torch.max(outputs.data, 1)
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
+        loss = criterion(output.squeeze(), target.float())  # Squeeze the output to remove the extra dimension
+        loss.backward()
+        optimizer.step()
 
-    train_loss = train_loss / len(train_loader.dataset)
-    train_accuracy = correct / total
-    return train_loss, train_accuracy
+        total_loss += loss.item()
+
+        # Compute accuracy
+        accuracy = acc_metric(output.squeeze(), target.int())  # Squeeze the output here as well
+        total_accuracy += accuracy.item()
+                
+        # Print predictions and targets
+        #print("Predictions:", output.squeeze().detach().cpu().numpy())
+        #print("Targets:", target.cpu().numpy())
+
+    avg_loss = total_loss / len(train_loader)
+    avg_accuracy = total_accuracy / len(train_loader)
+    return avg_loss, avg_accuracy
 
 
-# testing loop for 1D_CNN
-def validate1D(model, criterion, val_loader, device):
-    # Set the model to evaluation mode
+def test1D(model, device, test_loader, criterion, acc_metric):
     model.eval()
-    val_loss = 0.0
-    correct = 0
-    total = 0
-    all_targets = []
-    all_predicted = []
 
-    # Disable gradient computation for efficiency during validation
+    total_loss = 0
+    total_accuracy = 0
+
     with torch.no_grad():
-        # Iterate over the validation dataset
-        for inputs, labels in val_loader:
-            inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
 
-            val_loss += loss.item() * inputs.size(0)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+            output = model(data)
+            loss = criterion(output.squeeze(), target.float())  # Squeeze the output to remove the extra dimension
 
-            # Store targets and predicted values for later analysis
-            all_targets.extend(labels.cpu().numpy())
-            all_predicted.extend(predicted.cpu().numpy())
+            total_loss += loss.item()
 
-    val_loss = val_loss / len(val_loader.dataset)   # Calculate average validation loss
-    val_accuracy = correct / total    # Calculate validation accuracy
-    return val_loss, val_accuracy, all_targets, all_predicted
+            # Compute accuracy
+            accuracy = acc_metric(output.squeeze(), target.int())  # Squeeze the output here as well
+            total_accuracy += accuracy.item()
+
+    avg_loss = total_loss / len(test_loader)
+    avg_accuracy = total_accuracy / len(test_loader)
+    return avg_loss, avg_accuracy
