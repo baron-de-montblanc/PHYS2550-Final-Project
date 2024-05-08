@@ -132,3 +132,35 @@ def visualize_predictions(test_set, model, device, xrange=None, yrange=None):
     plt.legend()
     plt.show()
 
+def visualize_knn_predictions(label_list, pred_list, device, xrange=None, yrange=None):
+    """
+    xrange: horizontal range of the plot. Can be either None (see full extent)
+    or a tuple of ints
+    yrange: vertical range of the plot. Can be either None (see full extent)
+    or a tuple of ints
+    """
+
+    plt.figure(figsize=(6,4))
+    plt.title("Model Prediction vs. True Redshift", y=1.02)
+    plt.plot(label_list, pred_list, linestyle="", marker=".", markersize=4, label="Model Predictions")
+    plt.xlabel("True Redshift")
+    plt.ylabel("Predicted Redshift")
+
+    if xrange:
+        plt.xlim(xrange[0], xrange[1])
+    if yrange:
+        plt.ylim(yrange[0], yrange[1])
+
+    # Compare to a perfect prediction slope
+    xvals = np.linspace(min(label_list), max(label_list),1000)
+    plt.plot(xvals, xvals, linestyle='--', color=sns.color_palette()[1], alpha=0.9, label="Perfect Predictions Line")
+
+    # # Add the model's best-fit line prediction
+    slope, intercept, r, p, se = linregress(label_list, pred_list)
+
+    best_fit_model = slope*xvals + intercept
+    plt.plot(xvals, best_fit_model, linestyle='--', color=sns.color_palette()[2], alpha=0.9, label="Model Best-Fit Line")
+
+    plt.legend()
+    plt.show()
+
