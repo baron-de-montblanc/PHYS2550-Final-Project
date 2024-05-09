@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.nn import BatchNorm1d
+from torch_geometric.nn import GATConv
 
 
 # --------------- Define NN Models -----------------------
@@ -99,6 +100,36 @@ class Simple1DCNN(nn.Module):
         x = torch.flatten(x, 1)
         x = self.fc1(x)
         return x
+    
+
+
+
+class GATRegression(torch.nn.Module):
+    def __init__(self, num_features, hidden_dim, out_features=1):
+        super(GATRegression, self).__init__()
+        # GAT layer
+        self.gat1 = GATConv(num_features, hidden_dim, heads=1)  # Assuming 1 head for simplicity
+        self.gat2 = GATConv(hidden_dim, hidden_dim, heads=1)
+        
+        # Output linear layer for regression
+        self.out = nn.Linear(hidden_dim, out_features)
+
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
+        
+        # Pass through GAT layers
+        x = torch.relu(self.gat1(x, edge_index))
+        x = torch.relu(self.gat2(x, edge_index))
+        
+        # Global mean pooling
+        x = torch.mean(x, dim=0, keepdim=True)
+        
+        # Regression output
+        x = self.out(x)
+        return x
+
+
+
 
 
 
@@ -106,41 +137,39 @@ class Simple1DCNN(nn.Module):
 # ------------------------- Define training and testing loops ------------------
 
 
-def train_one_epoch(model, device, train_loader, optimizer, criterion):
-    model.train()
+def run_model(model, model_type, device, data_loader, criterion, optimizer=None, train=False):
+    if train:
+        model.train()
+    else:
+        model.eval()
 
     total_loss = 0
-    for data, target in train_loader:
-        data, target = data.to(device), target.to(device)
-        optimizer.zero_grad()
-        output = model(data)
-        output = output.squeeze(1)  # flatten the output
-        loss = criterion(output, target)
-        loss.backward()
-        optimizer.step()
 
-        total_loss += loss.item()
+    with torch.set_grad_enabled(train):
+        for batch in data_loader:
+            if model_type == 'fcnn':
+                data, target = batch
+            elif model_type == 'gat':
+                data, target = batch, batch.y
+            else:
+                raise ValueError("Unknown model type provided")
 
-    avg_loss = total_loss/len(train_loader)
-    return avg_loss
+            data, target = data.to(device), target.to(device)
 
+            if train:
+                optimizer.zero_grad()
 
+            output = model(data)
+            loss = criterion(output.squeeze(), target.float())
 
-def test(model, device, test_loader, criterion):
-    model.eval()
+            if train:
+                loss.backward()
+                optimizer.step()
 
-    total_loss = 0
-    with torch.no_grad():
-      for data, target in test_loader:
-          data, target = data.to(device), target.to(device)
+            total_loss += loss.item()
 
-          output = model(data)
-          output = output.squeeze(1)  # flatten the output
-          loss = criterion(output, target)
+    avg_loss = total_loss / len(data_loader)
 
-          total_loss += loss.item()
-
-    avg_loss = total_loss/len(test_loader)
     return avg_loss
 
 
