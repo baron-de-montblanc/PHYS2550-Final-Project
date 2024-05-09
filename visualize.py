@@ -25,7 +25,7 @@ def histogram_input(data, features, plot_feature, nbins, xrange=(0,40)):
     non_zero_mask = plot_data != 0
     plot_data = plot_data[non_zero_mask]
 
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(6,2))
     plt.hist(plot_data, density=True, bins=nbins, range=xrange)
     plt.title(f"Density of {plot_feature} in dataset",y=1.02)
     plt.ylabel("Density")
@@ -50,7 +50,7 @@ def plot_labels_features(data, labels, features, plot_feature, yrange=None):
     plot_data = plot_data[non_zero_mask]
     labels = labels[non_zero_mask]
 
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(6,2))
     plt.plot(plot_data, labels, linestyle="", marker=".", markersize=4, alpha=0.8)
     plt.title(f"Redshift as a function of {plot_feature}", y=1.02)
     plt.xlabel(plot_feature)
@@ -64,7 +64,7 @@ def plot_labels_features(data, labels, features, plot_feature, yrange=None):
 def plot_loss(loss_list, val_loss_list):
 
     # Visualize loss progression
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(6,2))
     plt.plot(loss_list, label="Training loss")
     plt.plot(val_loss_list, label="Validation loss")
 
@@ -75,22 +75,8 @@ def plot_loss(loss_list, val_loss_list):
     plt.show()
 
 
-def plot_accuracy(acc_list, val_acc_list):
-    acc_list = [i.item() for i in acc_list]
-    val_acc_list = [i.item() for i in val_acc_list]
-    plt.figure(figsize=(6,4))
-    plt.plot(acc_list, label="Training accuracy")
-    plt.plot(val_acc_list, label="Validation accuracy")
 
-    plt.title("R2-Score as a Function of Epoch", y=1.02)
-    plt.xlabel("Epoch number")
-    plt.ylabel("R2-Score")
-    plt.legend()
-    plt.show()
-
-
-
-def visualize_predictions(test_set, model, device, xrange=None, yrange=None):
+def visualize_predictions(true_z, predicted_z, model_name, xrange=None, yrange=None, savepath=None, transparent=False):
     """
     Given our test Subset, extract the test elements, pass them to the model and
     compare against true labels
@@ -99,20 +85,22 @@ def visualize_predictions(test_set, model, device, xrange=None, yrange=None):
     or a tuple of ints
     yrange: vertical range of the plot. Can be either None (see full extent)
     or a tuple of ints
+    savepath: if you want to save this figure, specify this save path (str)
+    transparent: if True, makes the background transparent and all text white (dark mode)
     """
-    label_list = []
-    pred_list = []
-    for data, label in test_set:
-        data = data.to(device)
-        label_list.append(label.item())
-        pred = model(data)
-        pred_list.append(pred.item())
+    # Set the style and text color based on transparency
+    if transparent:
+        text_color = 'white'
+        face_color = 'none'
+    else:
+        text_color = 'black'
+        face_color = 'white'
 
-    plt.figure(figsize=(6,4))
-    plt.title("Model Prediction vs. True Redshift", y=1.02)
-    plt.plot(label_list, pred_list, linestyle="", marker=".", markersize=4, label="Model Predictions")
-    plt.xlabel("True Redshift")
-    plt.ylabel("Predicted Redshift")
+    plt.figure(figsize=(6,4), facecolor=face_color)
+    plt.title(f"{model_name} Prediction vs. True Redshift", y=1.02, color=text_color)
+    plt.plot(true_z, predicted_z, linestyle="", marker=".", markersize=4, label="Predictions")
+    plt.xlabel("True Redshift", color=text_color)
+    plt.ylabel("Predicted Redshift", color=text_color)
 
     if xrange:
         plt.xlim(xrange[0], xrange[1])
@@ -120,17 +108,30 @@ def visualize_predictions(test_set, model, device, xrange=None, yrange=None):
         plt.ylim(yrange[0], yrange[1])
 
     # Compare to a perfect prediction slope
-    xvals = np.linspace(min(label_list), max(label_list),1000)
+    xvals = np.linspace(min(true_z), max(true_z),1000)
     plt.plot(xvals, xvals, linestyle='--', color=sns.color_palette()[1], alpha=0.9, label="Perfect Predictions Line")
 
     # Add the model's best-fit line prediction
-    slope, intercept, r, p, se = linregress(label_list, pred_list)
-    print(slope)
+    slope, intercept, r, p, se = linregress(true_z, predicted_z)
     best_fit_model = slope*xvals + intercept
-    plt.plot(xvals, best_fit_model, linestyle='--', color=sns.color_palette()[2], alpha=0.9, label="Model Best-Fit Line")
+    plt.plot(xvals, best_fit_model, linestyle='--', color=sns.color_palette()[2], alpha=0.9, label="Best-Fit Line")
 
+    print("----------------- Linear Regression Parameters -----------------")
+    print("Slope:\t\t\t\t\t",slope)
+    print("Intercept:\t\t\t\t",intercept)
+    print("Coefficient of determination (R2):\t",r**2)
+    print("p-value for null hypothesis:\t\t",p)
+    print("Standard error on the slope:\t\t",se)
+
+    plt.tick_params(axis='both', colors=text_color)
     plt.legend()
+
+    if savepath:
+        plt.savefig(savepath, dpi=500, bbox_inches='tight')
+
     plt.show()
+
+
 
 def visualize_knn_predictions(label_list, pred_list, device, xrange=None, yrange=None):
     """
