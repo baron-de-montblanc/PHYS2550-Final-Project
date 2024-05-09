@@ -11,15 +11,13 @@ from torch.nn import BatchNorm1d
 
 class SimpleFCNN(nn.Module):
 
-    def __init__(self, num_features, dropout_rate=0.5):
+    def __init__(self, num_features):
         super(SimpleFCNN, self).__init__()
         self.fc1 = nn.Linear(num_features, 256)
-        self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, 64)
-        self.fc4 = nn.Linear(64, 32)
-        self.fc5 = nn.Linear(32, 1)
+        self.fc2 = nn.Linear(256, 256)
+        self.out = nn.Linear(256, 1)
         self.activ = nn.LeakyReLU()
-        self.drop = nn.Dropout(dropout_rate)
+        self.drop = nn.Dropout(0.4)
 
     def forward(self, x):
         x = self.fc1(x)
@@ -30,15 +28,7 @@ class SimpleFCNN(nn.Module):
         x = self.activ(x)
         x = self.drop(x)
 
-        x = self.fc3(x)
-        x = self.activ(x)
-        x = self.drop(x)
-
-        x = self.fc4(x)
-        x = self.activ(x)
-        x = self.drop(x)
-
-        x = self.fc5(x)
+        x = self.out(x)
         return x
     
 # Modify the model architecture to include dropout and batch normalization
@@ -116,11 +106,10 @@ class Simple1DCNN(nn.Module):
 # ------------------------- Define training and testing loops ------------------
 
 
-def train_one_epoch(model, device, train_loader, optimizer, criterion, acc_metric):
+def train_one_epoch(model, device, train_loader, optimizer, criterion):
     model.train()
 
     total_loss = 0
-    accuracy_metric = acc_metric.to(device)
     for data, target in train_loader:
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
@@ -131,19 +120,16 @@ def train_one_epoch(model, device, train_loader, optimizer, criterion, acc_metri
         optimizer.step()
 
         total_loss += loss.item()
-        accuracy_metric(output, target)
 
     avg_loss = total_loss/len(train_loader)
-    avg_acc = accuracy_metric.compute()
-    return avg_loss, avg_acc
+    return avg_loss
 
 
 
-def test(model, device, test_loader, criterion, acc_metric):
+def test(model, device, test_loader, criterion):
     model.eval()
 
     total_loss = 0
-    accuracy_metric = acc_metric.to(device)
     with torch.no_grad():
       for data, target in test_loader:
           data, target = data.to(device), target.to(device)
@@ -153,11 +139,9 @@ def test(model, device, test_loader, criterion, acc_metric):
           loss = criterion(output, target)
 
           total_loss += loss.item()
-          accuracy_metric(output, target)
 
     avg_loss = total_loss/len(test_loader)
-    avg_acc = accuracy_metric.compute()
-    return avg_loss, avg_acc
+    return avg_loss
 
 
 # train and test loops for 1D_CNN
@@ -213,3 +197,25 @@ def test1D(model, device, test_loader, criterion, acc_metric):
     avg_loss = total_loss / len(test_loader)
     avg_accuracy = total_accuracy / len(test_loader)
     return avg_loss, avg_accuracy
+
+
+
+
+# ---------------------- Get predictions on the test set --------------------------------------
+
+
+
+def get_predictions(test_set, model, device):
+    """
+    Obtain model predictions on the test set
+    """
+
+    label_list = []
+    pred_list = []
+    for data, label in test_set:
+        data = data.to(device)
+        label_list.append(label.item())
+        pred = model(data)
+        pred_list.append(pred.item())
+
+    return label_list, pred_list  # x,y
