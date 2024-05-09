@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import linregress
+import networkx as nx
 
 
 # ------------------ Write some input/result visualization functions -----------------------
@@ -164,4 +165,43 @@ def visualize_knn_predictions(label_list, pred_list, device, xrange=None, yrange
 
     plt.legend()
     plt.show()
+
+
+
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+import networkx as nx
+
+def visualize_graph(graph):
+    """
+    Visualize the graphs with nodes positioned according to their feature value and index.
+    """
+
+    # Convert to CPU for visualization if it's on GPU
+    edge_index = graph.edge_index.cpu().numpy()
+    features = graph.x.cpu().numpy().flatten()  # Flatten since it's 2D [7, 1]
+
+    # Generate positions using node index for y and feature value for x
+    pos = {i: [features[i], i] for i in range(len(features))}  # x is feature, y is index
+
+    G = nx.Graph()
+    for i in range(len(features)):
+        G.add_node(i)
+    for start, end in edge_index.T:
+        G.add_edge(int(start), int(end), edge_type='knn')
+
+    plt.figure(figsize=(6, 4))
+    knn_edges = [(u, v) for (u, v, d) in G.edges(data=True) if d['edge_type'] == 'knn']
+    node_color = "#303030"
+    edge_color_knn = sns.color_palette()[2]
+
+    nx.draw_networkx_nodes(G, pos, node_size=40, node_color=node_color)
+    nx.draw_networkx_edges(G, pos, edgelist=knn_edges, edge_color=edge_color_knn, width=1.5, label='kNN Edges')
+    plt.title('Graph Visualization with kNN Edges')
+    plt.legend()
+    plt.show()
+
+
+
 
