@@ -13,10 +13,11 @@ class SimpleFCNN(nn.Module):
 
     def __init__(self, num_features, dropout_rate=0.5):
         super(SimpleFCNN, self).__init__()
-        self.fc1 = nn.Linear(num_features, 128)
-        self.fc2 = nn.Linear(128, 64)
-        self.fc3 = nn.Linear(64, 1)
-        # self.fc4 = nn.Linear(64, 1)
+        self.fc1 = nn.Linear(num_features, 256)
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(128, 64)
+        self.fc4 = nn.Linear(64, 32)
+        self.fc5 = nn.Linear(32, 1)
         self.activ = nn.LeakyReLU()
         self.drop = nn.Dropout(dropout_rate)
 
@@ -29,11 +30,15 @@ class SimpleFCNN(nn.Module):
         x = self.activ(x)
         x = self.drop(x)
 
-        # x = self.fc3(x)
-        # x = self.activ(x)
-        # x = self.drop(x)
-
         x = self.fc3(x)
+        x = self.activ(x)
+        x = self.drop(x)
+
+        x = self.fc4(x)
+        x = self.activ(x)
+        x = self.drop(x)
+
+        x = self.fc5(x)
         return x
     
 # Modify the model architecture to include dropout and batch normalization
@@ -126,7 +131,7 @@ def train_one_epoch(model, device, train_loader, optimizer, criterion, acc_metri
         optimizer.step()
 
         total_loss += loss.item()
-        accuracy_metric(output, target.int())
+        accuracy_metric(output, target)
 
     avg_loss = total_loss/len(train_loader)
     avg_acc = accuracy_metric.compute()
@@ -148,7 +153,7 @@ def test(model, device, test_loader, criterion, acc_metric):
           loss = criterion(output, target)
 
           total_loss += loss.item()
-          accuracy_metric(output, target.int())
+          accuracy_metric(output, target)
 
     avg_loss = total_loss/len(test_loader)
     avg_acc = accuracy_metric.compute()
