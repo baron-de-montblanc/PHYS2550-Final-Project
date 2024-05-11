@@ -108,8 +108,8 @@ def prepare_graphs(data, labels, k, device, batch_size=64):
     """
 
     # Convert data to PyTorch tensors and move to the appropriate device
-    data_tensor = torch.tensor(data, dtype=torch.float).to(device)
-    labels_tensor = torch.tensor(labels, dtype=torch.long).to(device)
+    data_tensor = torch.tensor(data, dtype=torch.float32).to(device)
+    labels_tensor = torch.tensor(labels, dtype=torch.float32).to(device)
 
     # Standardize the data (mean=0, std=1)
     mean = data_tensor.mean(dim=0, keepdim=True)

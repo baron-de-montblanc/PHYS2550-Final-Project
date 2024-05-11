@@ -2,7 +2,7 @@
 
 Spring 2024 - PHYS 2550 - Final Project
 
-*Authors: Jade Ducharme, Zacharias Escalante, Fei Fan, Soren Helhoski, Shi Yan*
+*Authors: Jade Ducharme, Zacharias Escalante, FeiFan Deng, Soren Helhoski, Shi Yan*
 
 ## Structure
 

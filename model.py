@@ -1,10 +1,11 @@
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn import Sequential, Linear, ReLU, BatchNorm1d
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.nn import BatchNorm1d
-from torch_geometric.nn import GATConv
+from torch_geometric.nn import GATConv, global_mean_pool, global_max_pool
 
 
 # --------------- Define NN Models -----------------------
@@ -105,26 +106,34 @@ class Simple1DCNN(nn.Module):
 
 
 class GATRegression(torch.nn.Module):
-    def __init__(self, num_features, hidden_dim, out_features=1):
+    def __init__(self, num_features, hidden_dim, num_heads, out_features=1):
         super(GATRegression, self).__init__()
-        # GAT layer
-        self.gat1 = GATConv(num_features, hidden_dim, heads=1)  # Assuming 1 head for simplicity
-        self.gat2 = GATConv(hidden_dim, hidden_dim, heads=1)
+
+        # # GAT layers
+        self.gat1 = GATConv(num_features, hidden_dim, heads=num_heads)
+        self.gat2 = GATConv(hidden_dim*num_heads, hidden_dim, heads=num_heads)
         
-        # Output linear layer for regression
-        self.out = nn.Linear(hidden_dim, out_features)
+        # Linear layers
+        self.fc1 = Linear(hidden_dim*num_heads, hidden_dim)
+        self.out = Linear(hidden_dim, out_features)
+
+        # Other layers
+        self.dropout = nn.Dropout(0.2)
 
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
-        
+
         # Pass through GAT layers
         x = torch.relu(self.gat1(x, edge_index))
+        x = self.dropout(x)
         x = torch.relu(self.gat2(x, edge_index))
-        
-        # Global mean pooling
-        x = torch.mean(x, dim=0, keepdim=True)
-        
+        x = self.dropout(x)
+
+        # Global pooling
+        x = global_mean_pool(x, data.batch)
+
         # Regression output
+        x = torch.relu(self.fc1(x))
         x = self.out(x)
         return x
 
@@ -234,14 +243,22 @@ def test1D(model, device, test_loader, criterion, acc_metric):
 
 
 
-def get_predictions(test_set, model, device):
+def get_predictions(test_set, model, device, model_type):
     """
     Obtain model predictions on the test set
+
+    model_type is one of 'fcnn' or 'gat' (str)
     """
 
     label_list = []
     pred_list = []
-    for data, label in test_set:
+    for batch in test_set:
+        if model_type == 'fcnn':
+            data, label = batch
+        elif model_type == 'gat':
+            data, label = batch, batch.y
+        else: raise ValueError("Unknown model type")
+ 
         data = data.to(device)
         label_list.append(label.item())
         pred = model(data)
