@@ -62,17 +62,36 @@ def plot_labels_features(data, labels, features, plot_feature, yrange=None):
 
 
 
-def plot_loss(loss_list, val_loss_list):
+def plot_loss(loss_list, val_loss_list, transparent=False, savepath=None):
+    """
+    Plot the training and validation loss as a function of epoch
+
+    transparent: (bool) If true, set facecolor to transparent and set text color to white
+    savepath: (str or None) If str, save the plot to the specified path
+    """
+
+    # Set the style and text color based on transparency
+    if transparent:
+        text_color = 'white'
+        face_color = 'none'
+    else:
+        text_color = 'black'
+        face_color = 'white'
 
     # Visualize loss progression
-    plt.figure(figsize=(6,2))
+    plt.figure(figsize=(6,2), facecolor=face_color)
     plt.plot(loss_list, label="Training loss")
     plt.plot(val_loss_list, label="Validation loss")
 
-    plt.title("MSE Loss as a Function of Epoch", y=1.02)
-    plt.xlabel("Epoch number")
-    plt.ylabel("Loss")
+    plt.title("MSE Loss as a Function of Epoch", y=1.02, color=text_color)
+    plt.xlabel("Epoch number", color=text_color)
+    plt.ylabel("Loss", color=text_color)
+    plt.tick_params(axis='both', colors=text_color)
     plt.legend()
+
+    if savepath:
+        plt.savefig(savepath, dpi=500, bbox_inches='tight')
+        
     plt.show()
 
 
@@ -199,6 +218,8 @@ def visualize_graph(graph):
     nx.draw_networkx_nodes(G, pos, node_size=40, node_color=node_color)
     nx.draw_networkx_edges(G, pos, edgelist=knn_edges, edge_color=edge_color_knn, width=1.5, label='kNN Edges')
     plt.title('Graph Visualization with kNN Edges')
+    plt.xlabel("Feature value")
+    plt.ylabel("Feature index")
     plt.legend()
     plt.show()
 
