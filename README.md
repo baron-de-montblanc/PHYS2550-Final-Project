@@ -18,6 +18,10 @@ As a first step, we want to know how a simple fully-connected neural network per
 
 TODO.
 
+#### GAT
+
+We implement a Graph Attention Network with the attentional mechanism described in Veličković et al. (2018).
+
 #### KNN Regression 
 
 We perform a k-nearest neighbors regression on the cleaned data, and compare the results to spectroscopic data for varying k values and feature normalizations.
