@@ -5,7 +5,7 @@ from torch.nn import Sequential, Linear, ReLU, BatchNorm1d
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.nn import BatchNorm1d
-from torch_geometric.nn import GATConv, global_mean_pool, global_max_pool
+from torch_geometric.nn import GATConv, global_mean_pool, global_max_pool, global_add_pool
 
 
 # --------------- Define NN Models -----------------------
@@ -112,28 +112,44 @@ class GATRegression(torch.nn.Module):
         # # GAT layers
         self.gat1 = GATConv(num_features, hidden_dim, heads=num_heads)
         self.gat2 = GATConv(hidden_dim*num_heads, hidden_dim, heads=num_heads)
-        
+  
         # Linear layers
-        self.fc1 = Linear(hidden_dim*num_heads, hidden_dim)
-        self.out = Linear(hidden_dim, out_features)
+        self.fc1 = Linear(hidden_dim*num_heads, 128)
+        self.bn1 = nn.BatchNorm1d(128)
+        
+        self.fc2 = Linear(128, 64)
+        self.bn2 = nn.BatchNorm1d(64)
+        
+        self.out = Linear(64, out_features)
 
         # Other layers
         self.dropout = nn.Dropout(0.2)
+        self.activ = nn.ReLU()
 
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
 
-        # Pass through GAT layers
-        x = torch.relu(self.gat1(x, edge_index))
+        # GAT layers
+        x = self.gat1(x, edge_index)
+        x = self.activ(x)
         x = self.dropout(x)
-        x = torch.relu(self.gat2(x, edge_index))
+
+        x = self.gat2(x, edge_index)
+        x = self.activ(x)
         x = self.dropout(x)
 
         # Global pooling
-        x = global_mean_pool(x, data.batch)
+        x = global_add_pool(x, data.batch)
 
-        # Regression output
-        x = torch.relu(self.fc1(x))
+        # Linear layers
+        x = self.fc1(x)
+        x = self.bn1(x)
+        x = self.activ(x)
+        
+        x = self.fc2(x)
+        x = self.bn2(x)
+        x = self.activ(x)
+        
         x = self.out(x)
         return x
 
@@ -147,6 +163,7 @@ class GATRegression(torch.nn.Module):
 
 
 def run_model(model, model_type, device, data_loader, criterion, optimizer=None, train=False):
+    model.to(device)
     if train:
         model.train()
     else:
@@ -169,7 +186,7 @@ def run_model(model, model_type, device, data_loader, criterion, optimizer=None,
                 optimizer.zero_grad()
 
             output = model(data)
-            loss = criterion(output.squeeze(), target.float())
+            loss = criterion(output.squeeze(), target)
 
             if train:
                 loss.backward()

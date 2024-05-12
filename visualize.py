@@ -192,10 +192,20 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import networkx as nx
 
-def visualize_graph(graph):
+def visualize_graph(graph, transparent=False, savepath=None):
     """
     Visualize the graphs with nodes positioned according to their feature value and index.
+    
+    savepath: if you want to save this figure, specify this save path (str)
+    transparent: if True, makes the background transparent and all text white (dark mode)
     """
+    # Set the style and text color based on transparency
+    if transparent:
+        text_color = 'white'
+        face_color = 'none'
+    else:
+        text_color = 'black'
+        face_color = 'white'
 
     # Convert to CPU for visualization if it's on GPU
     edge_index = graph.edge_index.cpu().numpy()
@@ -210,17 +220,21 @@ def visualize_graph(graph):
     for start, end in edge_index.T:
         G.add_edge(int(start), int(end), edge_type='knn')
 
-    plt.figure(figsize=(6, 4))
+    plt.figure(figsize=(6,4), facecolor=face_color)
     knn_edges = [(u, v) for (u, v, d) in G.edges(data=True) if d['edge_type'] == 'knn']
     node_color = "#303030"
     edge_color_knn = sns.color_palette()[2]
 
     nx.draw_networkx_nodes(G, pos, node_size=40, node_color=node_color)
     nx.draw_networkx_edges(G, pos, edgelist=knn_edges, edge_color=edge_color_knn, width=1.5, label='kNN Edges')
-    plt.title('Graph Visualization with kNN Edges')
-    plt.xlabel("Feature value")
-    plt.ylabel("Feature index")
+    plt.title('Graph Visualization with kNN Edges', color=text_color)
+    plt.xlabel("Node value", color=text_color)
+    plt.ylabel("Node index", color=text_color)
     plt.legend()
+    plt.tick_params(axis='both', colors=text_color)
+    
+    if savepath:
+        plt.savefig(savepath, dpi=500, bbox_inches='tight')
     plt.show()
 
 
