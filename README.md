@@ -8,7 +8,7 @@ Spring 2024 - PHYS 2550 - Final Project
 
 #### Preprocessing
 
-First, the data is loaded, basic preprocessing steps are applied (taking care of NaN values, normalization, etc. --> TODO), and the data is split into training, validation, and test sets. We visualize our input data using histograms and 2D feature vs. label (redshift) plots.
+First, the data is loaded, basic preprocessing steps are applied (taking care of NaN values, standardization, etc.), and the data is split into training, validation, and test sets. We visualize our input data using histograms and 2D feature vs. label (redshift) plots.
 
 #### Simple FCNN
 
