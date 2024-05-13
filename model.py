@@ -270,7 +270,7 @@ def get_predictions(test_set, model, device, model_type):
     label_list = []
     pred_list = []
     for batch in test_set:
-        if model_type == 'fcnn':
+        if model_type == 'fcnn' or model_type=="cnn":
             data, label = batch
         elif model_type == 'gat':
             data, label = batch, batch.y
