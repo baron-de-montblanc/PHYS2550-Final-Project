@@ -34,7 +34,7 @@ def histogram_input(data, features, plot_feature, nbins, xrange=(0,40)):
     plt.show()
 
 
-def plot_labels_features(data, labels, features, plot_feature, yrange=None):
+def plot_labels_features(data, labels, features, plot_feature, yrange=None, transparent=False, savepath=None):
     """
     Given input data of shape [input_size, num_features]
     labels of shape [input_size,] and features of shape [num_features,];
@@ -42,6 +42,13 @@ def plot_labels_features(data, labels, features, plot_feature, yrange=None):
 
     yrange: vertical extent of the plot. Can be either None (show the full extent) or tuple
     """
+    # Set the style and text color based on transparency
+    if transparent:
+        text_color = 'white'
+        face_color = 'none'
+    else:
+        text_color = 'black'
+        face_color = 'white'
 
     f_idx = np.where(features == plot_feature)[0][0]
     plot_data = data[:,f_idx]
@@ -51,13 +58,31 @@ def plot_labels_features(data, labels, features, plot_feature, yrange=None):
     plot_data = plot_data[non_zero_mask]
     labels = labels[non_zero_mask]
 
-    plt.figure(figsize=(6,2))
+    plt.figure(figsize=(6,2), facecolor=face_color)
     plt.plot(plot_data, labels, linestyle="", marker=".", markersize=4, alpha=0.8)
-    plt.title(f"Redshift as a function of {plot_feature}", y=1.02)
-    plt.xlabel(plot_feature)
-    plt.ylabel("Redshift")
+    plt.title(f"True redshift as a function of {plot_feature}", y=1.02, color=text_color)
+    plt.xlabel(plot_feature, color=text_color)
+    plt.ylabel("True redshift", color=text_color)
     if yrange:
         plt.ylim(yrange[0], yrange[1])
+    plt.tick_params(axis='both', colors=text_color)
+
+    xvals = np.linspace(min(plot_data), max(plot_data), 1000)
+    # Calculate best-fit line
+    slope, intercept, r, p, se = linregress(plot_data, labels)
+    best_fit_model = slope*xvals + intercept
+    plt.plot(xvals, best_fit_model, linestyle='--', color=sns.color_palette()[2], alpha=0.9, label="Best-Fit Line")
+    plt.legend()
+
+    print("----------------- Linear Regression Parameters -----------------")
+    print("Slope:\t\t\t\t\t",slope)
+    print("Intercept:\t\t\t\t",intercept)
+    print("Coefficient of determination (R2):\t",r**2)
+    print("p-value for null hypothesis:\t\t",p)
+    print("Standard error on the slope:\t\t",se)
+
+    if savepath:
+        plt.savefig(savepath, dpi=500, bbox_inches='tight')
     plt.show()
 
 
