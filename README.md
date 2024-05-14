@@ -4,24 +4,41 @@ Spring 2024 - PHYS 2550 - Final Project
 
 *Authors: Jade Ducharme, Zacharias Escalante, FeiFan Deng, Soren Helhoski, Shi Yan*
 
+The goal of our final project is to perform a linear regression task on clusters of galaxy in order to infer, based on seven distinct features, the redshift of each. 
+
 ## Structure
 
-#### Preprocessing
+#### ```data``` folder
 
-First, the data is loaded, basic preprocessing steps are applied (taking care of NaN values, standardization, etc.), and the data is split into training, validation, and test sets. We visualize our input data using histograms and 2D feature vs. label (redshift) plots.
+We include three files in this folder.
 
-#### Simple FCNN
+1. ```specz_fluxes.csv```: the "raw" data which contains some missing ("NaN") values.
+2. ```clean_specz_fluxes.csv```: the "clean" data, where the missing ("NaN") values have been dealt with. This is our training data.
+3. ```specz_photoz.csv```: the non_ML comparison data. Contains "true" (spectroscopic) redshifts and the associated non-ML (photoz) redshift.
 
-As a first step, we want to know how a simple fully-connected neural network performs on this dataset. We define a simple FCNN model in ```model.py```, train it, and visualize the results using a predicted label (redshift) vs. true label (redshift) plot.
+#### ```src``` folder
 
-#### 1D CNN
+In the ```src``` folder, you will find three accompanying Python files:
 
-TODO.
+1. ```model.py```: where all model classes and training loops are defined.
+2. ```preprocess.py```: where all data preprocessing functions (data loading, standardization, and splitting) are defined.
+3. ```visualize.py```: where all plotting functions (loss curves, histograms, predictions vs. labels, etc.) are defined.
 
-#### GAT
+#### Notebooks
 
-We implement a Graph Attention Network with the attentional mechanism described in Veličković et al. (2018).
+For a more comfortable user experience, we include two notebooks which continuously refer to the source code from the ```src``` folder, reducing code bloat in the notebooks themselves.
 
-#### KNN Regression 
+##### 1. ```make_clean_data.ipynb```
+This notebook details how to obtain the "clean" data from the "raw" ```data/specz_fluxes.csv```.
 
-We perform a k-nearest neighbors regression on the cleaned data, and compare the results to spectroscopic data for varying k values and feature normalizations.
+##### 2. ```workbook.ipynb```
+Here, all models are instantiated and trained, and all training and prediction curves are presented. The models we considered are:
+
+a. Fully-Connected Neural Network
+b. 1D Convolutional Neural Network
+c. Graph Attention Network
+d. k-Nearest-Neighbors Regression
+
+#### Presentation Slides
+
+We also include our final presentation slides under ```presentation_slides.pdf``` :)
