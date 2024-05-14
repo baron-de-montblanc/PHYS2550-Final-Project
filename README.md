@@ -34,10 +34,10 @@ This notebook details how to obtain the "clean" data from the "raw" ```data/spec
 ##### 2. ```workbook.ipynb```
 Here, all models are instantiated and trained, and all training and prediction curves are presented. The models we considered are:
 
-a. Fully-Connected Neural Network
-b. 1D Convolutional Neural Network
-c. Graph Attention Network
-d. k-Nearest-Neighbors Regression
+1. Fully-Connected Neural Network
+2. 1D Convolutional Neural Network
+3. Graph Attention Network
+4. k-Nearest-Neighbors Regression
 
 #### Presentation Slides
 
