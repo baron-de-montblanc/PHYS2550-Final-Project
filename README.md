@@ -38,3 +38,7 @@ a. Fully-Connected Neural Network
 b. 1D Convolutional Neural Network
 c. Graph Attention Network
 d. k-Nearest-Neighbors Regression
+
+#### Presentation Slides
+
+We also include our final presentation slides under ```presentation_slides.pdf``` :)
