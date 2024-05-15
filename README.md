@@ -1,10 +1,10 @@
-# Galaxy Cluster Redshift Classification Using Machine Learning
+# Cluster-Lensed Galaxy Redshift Classification Using Machine Learning
 
 Spring 2024 - PHYS 2550 - Final Project
 
 *Authors:  Feifan Deng, Jade Ducharme, Zacharias Escalante, Soren Helhoski, Shi Yan*
 
-The goal of our final project is to perform a linear regression task on clusters of galaxy in order to infer, based on seven distinct features, the redshift of each. 
+The goal of our final project is to perform a linear regression task on weakly-lensed galaxies contained in behind cluster fields in order to infer, based on seven distinct features, the redshift of each. 
 
 ## Structure
 
