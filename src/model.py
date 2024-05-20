@@ -33,58 +33,7 @@ class SimpleFCNN(nn.Module):
         x = self.out(x)
         return x
     
-# Modify the model architecture to include dropout and batch normalization
-class ModifiedSimple1DCNN(nn.Module):
-    def __init__(self, num_features, num_classes):
-        super(ModifiedSimple1DCNN, self).__init__()
-        self.conv1 = nn.Conv1d(in_channels=1, out_channels=16, kernel_size=3, stride=1, padding=1)
-        self.conv2 = nn.Conv1d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.relu = nn.ReLU()
-        self.pool = nn.MaxPool1d(kernel_size=2, stride=2, padding=0)
-        self.dropout = nn.Dropout(p=0.5)  # Adding dropout with a probability of 0.5
-        self.fc1 = nn.Linear(32 * (num_features // 4), 64)  # Adjusting the input size to the fully connected layer
-        self.fc2 = nn.Linear(64, num_classes)
-        self.bn = nn.BatchNorm1d(32)  # Adding batch normalization
 
-    def forward(self, x):
-        x = x.unsqueeze(1)
-        x = self.conv1(x)
-        x = self.relu(x)
-        x = self.pool(x)
-        x = self.dropout(x)  # Applying dropout
-        x = self.conv2(x)
-        x = self.relu(x)
-        x = self.pool(x)
-        x = self.dropout(x)  # Applying dropout
-        x = torch.flatten(x, 1)
-        x = self.fc1(x)
-        x = self.relu(x)
-        x = self.fc2(x)
-        return x  # No need to squeeze the output
-
-'''
-class Simple1DCNN(nn.Module):
-    def __init__(self, num_features, num_classes):
-        super(Simple1DCNN, self).__init__()  # initialize
-        # super() is a built-in Python function used to call methods of a superclass (or parent class) in a subclass (or child class).
-        # conv1 one convolutional layer
-        self.conv1 = nn.Conv1d(in_channels=1, out_channels=16, kernel_size=3, stride=1, padding=1)
-        self.relu = nn.ReLU()  # using ReLU function
-        # pool max-pooling layer
-        self.pool = nn.MaxPool1d(kernel_size=2, stride=2, padding=0)
-        # fc1 fully connected layer
-        self.fc1 = nn.Linear(16 * (num_features // 2), num_classes)
-
-    def forward(self, x):   # forward pass of the model
-        x = x.unsqueeze(1)  # Add a dimension for the 'in_channels' expected by Conv1d
-        x = self.conv1(x)
-        x = self.relu(x)
-        x = self.pool(x)
-        x = torch.flatten(x, 1)
-        x = self.fc1(x)
-        return x
-        #return x.squeeze(1)  # Squeeze the output to match the target size
-'''
 
 
 class Simple1DCNN(nn.Module):
@@ -274,6 +223,9 @@ def get_predictions(test_set, model, device, model_type):
             data, label = batch
         elif model_type == 'gat':
             data, label = batch, batch.y
+        elif model_type == 'Simple1DCNN':
+            data, label = batch
+            data = data.unsqueeze(0).to(device)  # Add a batch dimension and move to device
         else: raise ValueError("Unknown model type")
  
         data = data.to(device)
@@ -282,3 +234,4 @@ def get_predictions(test_set, model, device, model_type):
         pred_list.append(pred.item())
 
     return label_list, pred_list  # x,y
+
