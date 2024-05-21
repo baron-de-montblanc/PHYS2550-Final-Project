@@ -10,11 +10,12 @@ The goal of our final project is to perform a linear regression task on weakly-l
 
 #### ```data``` folder
 
-We include three files in this folder.
+We include four files in this folder.
 
 1. ```specz_fluxes.csv```: the "raw" data which contains some missing ("NaN") values.
 2. ```clean_specz_fluxes.csv```: the "clean" data, where the missing ("NaN") values have been dealt with. This is our training data.
-3. ```specz_photoz.csv```: the non_ML comparison data. Contains "true" (spectroscopic) redshifts and the associated non-ML (photoz) redshift.
+3. ```synthetic_data.csv```: Synthetic data, generated using the known errors on our flux measurements.
+4. ```specz_photoz.csv```: the non_ML comparison data. Contains "true" (spectroscopic) redshifts and the associated non-ML (photoz) redshift.
 
 #### ```src``` folder
 
