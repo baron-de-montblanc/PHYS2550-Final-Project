@@ -29,15 +29,18 @@ In the ```src``` folder, you will find three accompanying Python files:
 For a more comfortable user experience, we include two notebooks which continuously refer to the source code from the ```src``` folder, reducing code bloat in the notebooks themselves.
 
 ##### 1. ```make_clean_data.ipynb```
-This notebook details how to obtain the "clean" data from the "raw" ```data/specz_fluxes.csv```.
+This notebook details how to obtain the "clean" data from the "raw" ```data/specz_fluxes.csv```. Following a suggestion made by Prof. Gouskos after our final presentation, this notebook can now also be used to generate synthetic data using the errors on the flux measurements.
 
 ##### 2. ```workbook.ipynb```
 Here, all models are instantiated and trained, and all training and prediction curves are presented. The models we considered are:
 
-1. Fully-Connected Neural Network
-2. 1D Convolutional Neural Network
-3. Graph Attention Network
-4. k-Nearest-Neighbors Regression
+1. Fully-Connected Neural Network (FCNN)
+2. *FCNN on Synthetic Data
+3. 1D Convolutional Neural Network
+4. Graph Attention Network
+5. k-Nearest-Neighbors Regression
+
+*Based on a suggestion from Prof. Gouskos after our final presentation, we generated some synthetic data and used it as training input to an FCNN.
 
 #### Presentation Slides
 
